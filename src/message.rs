@@ -2,7 +2,7 @@
 //!
 //! Creates the struct and implements a reader
 
-use std::io::{Read, BufReader, Write, BufWriter};
+use std::io::{Read, Write, BufWriter};
 use std::path::Path;
 use std::fs::File;
 

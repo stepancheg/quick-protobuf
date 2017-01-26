@@ -2,6 +2,7 @@
 
 use errors::{Result, ErrorKind};
 use message::MessageRead;
+use packed::Packed;
 
 use byteorder::LittleEndian as LE;
 use byteorder::ByteOrder;
@@ -158,16 +159,11 @@ impl<'a> Reader<'a> {
     ///
     /// Note: packed field are stored as a variable length chunk of data, while regular repeated
     /// fields behaves like an iterator, yielding their tag everytime
-    pub fn read_packed_repeated_field<M, F: FnMut(&mut Self) -> Result<M>>(&mut self, mut read: F) -> Result<Vec<M>> {
+    pub fn read_packed_repeated_field<M, F: FnMut(&mut Self) -> Result<M>>(&mut self, read: F) -> Result<Packed<'a, F>> {
         let len = self.read_varint()? as usize;
-        let cur_len = self.len;
-        self.len = self.pos + len;
-        let mut v = Vec::new();
-        while !self.is_eof() {
-            v.push(read(self)?);
-        }
-        self.len = cur_len;
-        Ok(v)
+        let packed = Packed::new(&self.inner[self.pos..self.pos + len], read);
+        self.pos += len;
+        Ok(packed)
     }
 
     /// Reads a nested message

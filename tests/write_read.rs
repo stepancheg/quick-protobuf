@@ -1,8 +1,9 @@
 extern crate quick_protobuf;
 
-use std::io::{Read, Write};
+use std::io::{Write};
 use quick_protobuf::{Reader, MessageRead, Writer, MessageWrite, Result};
 use quick_protobuf::sizeofs::*;
+use quick_protobuf::packed::Packed;
 
 macro_rules! write_read_primitive {
     ($name:ident, $read:ident, $write:ident) => (write_read_primitive!($name, $read, $write, 145););
@@ -151,5 +152,6 @@ fn wr_packed_uint32(){
         w.write_packed_repeated_field(&v, |r, m| r.write_uint32(*m), &|m| sizeof_uint32(*m)).unwrap();
     }
     let mut r = Reader::from_bytes(&buf);
-    assert_eq!(v, &*r.read_packed_repeated_field(|r| r.read_uint32()).unwrap());
+    assert_eq!(v, r.read_packed_repeated_field(|r| r.read_uint32()).unwrap()
+               .collect::<Result<Vec<_>>>().unwrap());
 }
